@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A fictional, interactive Juno GA readiness review prototype.">
+<title>Juno · GA Readiness</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #171b20;
+  --paper: #1d2229;
+  --ink: #c2c4c7;
+  --muted: #a0a6af;
+  --line: #30363e;
+  --soft: #242b34;
+  --blue: #69b3ff;
+  --warn: #e7bd77;
+  --warn-bg: #3d3220;
+  --focus: #85b8ff;
+}
+* { box-sizing: border-box; }
+body { position: relative; min-height: 100vh; margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 Arial, Helvetica, sans-serif; }
+button, input, textarea { font: inherit; }
+button, summary, label.choice { cursor: pointer; }
+button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+button { border: 1px solid #48515e; border-radius: 3px; background: #282f38; color: var(--ink); padding: 7px 12px; }
+button:hover { background: #343e4a; }
+button:disabled { opacity: .5; cursor: default; }
+h1, h2, h3, p, dl, dd { margin: 0; }
+h1 { font-size: 24px; line-height: 1.3; font-weight: 600; letter-spacing: -.4px; }
+h2 { font-size: 16px; font-weight: 600; }
+h3 { font-size: 14px; font-weight: 600; }
+small, .small { font-size: 12px; }
+.muted { color: var(--muted); }
+.jira-link, .breadcrumb { color: var(--blue); }
+.jira-global { height: 58px; padding: 0 20px; display: flex; align-items: center; gap: 23px; border-bottom: 1px solid #292f38; background: #191e24; white-space: nowrap; }
+.app-grid { font-size: 27px; line-height: 1; color: var(--muted); }
+.jira-brand { display: flex; align-items: center; gap: 12px; font-size: 25px; color: #aab8ce; letter-spacing: -.8px; }
+.jira-logo { display: inline-block; width: 24px; height: 24px; border: 7px solid #2684ff; transform: rotate(45deg); border-right-color: #0052cc; border-bottom-color: #0052cc; }
+.global-menu { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+.create-context { padding: 6px 12px; background: #0052cc; border-radius: 3px; color: #e0eaff; font-weight: 600; }
+.global-spacer, .toolbar-spacer { flex: 1; }
+.search-context { border: 1px solid #59616b; border-radius: 3px; color: #89919c; width: 160px; padding: 5px 9px; }
+.global-help { display: inline-grid; place-items: center; border-radius: 50%; background: #9ca4af; color: #1b222b; width: 21px; height: 21px; font-weight: bold; }
+.avatar { display: inline-grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%; background: #39434f; color: #dce2eb; margin-right: 5px; font-size: 12px; vertical-align: middle; }
+.project-sidebar { position: absolute; top: 58px; bottom: 0; left: 0; width: 216px; border-right: 1px solid #41464c; background: #12161a; display: flex; flex-direction: column; padding: 20px 8px 14px; }
+.project-identity { display: flex; gap: 11px; align-items: center; padding: 0 5px 28px; }
+.project-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 5px; border: 2px solid #185461; background: #058fa6; color: #e0f3f4; font-size: 21px; font-weight: 600; flex-shrink: 0; }
+.project-identity strong { font-size: 15px; }
+.sidebar-items { display: grid; gap: 3px; }
+.sidebar-items>div { display: flex; align-items: center; gap: 13px; min-height: 39px; padding: 7px 10px; border-radius: 3px; font-size: 14px; }
+.sidebar-items>div>span:first-child { font-size: 21px; width: 22px; text-align: center; color: #a4afbd; line-height: 1; }
+.sidebar-items>.sidebar-selected { background: #1c2a3d; color: var(--blue); }
+.sidebar-items>.sidebar-selected>span:first-child { color: var(--blue); }
+.sidebar-bottom { margin-top: auto; color: #89939f; font-size: 11px; padding: 16px 10px 0; }
+.sidebar-bottom span { float: right; font-size: 24px; line-height: 15px; }
+main { margin: 0 0 0 216px; padding: 27px 28px 40px; }
+.issue-heading { display: flex; gap: 13px; align-items: center; }
+.issue-heading .project-icon { width: 44px; height: 44px; }
+.breadcrumb { font-size: 13px; margin-bottom: 3px; }
+.breadcrumb span { color: #737d89; margin: 0 10px; }
+.breadcrumb .demo-label { display: inline-block; font-size: 10px; color: #a4adba; background: #252d38; border-radius: 3px; padding: 2px 5px; margin: 0 0 0 9px; vertical-align: middle; }
+.issue-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 22px 0 23px; font-size: 13px; }
+.issue-toolbar>span:not(.toolbar-spacer) { padding: 6px 10px; border-radius: 3px; background: #1b2027; }
+.issue-toolbar .issue-status { border: 1px solid #303944; margin-left: 7px; font-weight: 600; }
+.jira-issue-layout { display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 35px; align-items: start; }
+.issue-main { min-width: 0; container-type: inline-size; }
+.jira-section-title { display: flex; gap: 8px; align-items: center; font-size: 14px; margin: 0 0 12px; }
+.jira-section-title>span { color: #a4abb4; width: 13px; }
+.details-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding-left: 21px; }
+.field-list>div { display: grid; grid-template-columns: 122px minmax(0,1fr); gap: 10px; margin-bottom: 8px; align-items: baseline; font-size: 13px; }
+.field-list dt { color: var(--muted); }
+.field-list dd { min-width: 0; overflow-wrap: anywhere; }
+.feature-icon { color: #70c994; font-size: 17px; vertical-align: middle; margin-right: 3px; }
+.priority-icon { color: #ff8b73; font-size: 20px; font-weight: bold; line-height: 12px; margin-right: 5px; }
+.jira-label { color: var(--blue); background: #1e2631; border-radius: 2px; padding: 1px 4px; display: inline-block; font-size: 12px; }
+.issue-tabs { display: flex; gap: 22px; border-bottom: 2px solid #242c37; margin: 19px 0 15px 21px; flex-wrap: wrap; }
+.issue-tabs>span { font-size: 13px; font-weight: 600; padding: 8px 0; margin-bottom: -2px; }
+.issue-tabs>.active { border-bottom: 2px solid #2684ff; color: var(--blue); }
+.overview-fields { padding-left: 30px; }
+.overview-fields .field-list>div { grid-template-columns: 132px minmax(0,1fr); }
+.small-avatar { width: 21px; height: 21px; font-size: 10px; }
+.badge { display: inline-block; vertical-align: middle; padding: 2px 6px; border-radius: 3px; background: #303a47; font-size: 10px; font-weight: 600; color: #b7c6d9; }
+.badge.warn { color: var(--warn); background: var(--warn-bg); }
+.panel { margin-top: 19px; border: 1px solid #39434f; border-radius: 3px; background: #1b2128; overflow: hidden; }
+.panel-header { padding: 12px 15px; border-bottom: 1px solid #343e4a; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #202731; }
+.panel-header h2 { font-size: 14px; }
+.panel-label { display: flex; gap: 8px; align-items: center; }
+.section-chevron { color: #acb6c5; font-size: 17px; }
+.summary { padding: 15px 18px 0; }
+.summary h3 { font-size: 16px; color: #e1e4e9; }
+.summary p { margin-top: 5px; font-size: 13px; }
+.inventory { margin-top: 7px; font-size: 12px; }
+summary { color: var(--blue); font-weight: 400; padding: 6px 0; width: fit-content; }
+.inventory summary { font-size: 12px; }
+.inventory-box { padding: 12px; background: #14191f; margin: 7px 0 3px; }
+.content { padding: 15px 18px 19px; display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 22px; }
+.section-label { font-size: 10px; font-weight: 600; letter-spacing: .65px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.risk { border-left: 2px solid #b68a45; padding-left: 12px; }
+.risk h3 { font-size: 15px; line-height: 1.4; margin: 7px 0 11px; color: #d6dce5; }
+.risk p { font-size: 13px; }
+.fact-label { font-size: 10px; font-weight: 600; letter-spacing: .45px; text-transform: uppercase; margin-bottom: 3px; color: #aab6c5; }
+.interpretation { margin-top: 12px; }
+.evidence { margin-top: 8px; font-size: 12px; }
+.source { border-top: 1px solid var(--line); padding: 10px 0; }
+.source:first-child { border-top: 0; }
+.source-head { display: flex; gap: 7px; align-items: baseline; flex-wrap: wrap; }
+.source-id { font-size: 11px; color: var(--blue); }
+.source-title { font-weight: 600; }
+.source-meta { font-size: 11px; color: var(--muted); margin: 3px 0; }
+.source blockquote { margin: 5px 0 0; padding-left: 10px; border-left: 2px solid #4b5869; color: #bfc9d7; font-size: 12px; }
+.gap+.gap { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.gap h3 { font-size: 14px; color: #d6dce5; }
+.gap p { margin-top: 5px; font-size: 13px; }
+.next-step { margin-top: 8px; font-size: 12px; }
+.next-step strong { font-weight: 600; }
+.suggestion { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.feedback { font-size: 12px; margin-top: 3px; }
+.feedback summary { color: var(--muted); font-size: 11px; }
+.feedback-form { margin-top: 5px; }
+.feedback textarea { min-height: 60px; }
+.feedback button { padding: 5px 9px; font-size: 12px; margin-top: 6px; }
+.feedback-status { margin-top: 5px; font-size: 12px; color: var(--muted); }
+.review { border-top: 1px solid #343e4a; background: #1e252e; padding: 14px 18px; }
+.review-heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 10px; flex-wrap: wrap; }
+.review-heading p { font-size: 11px; color: var(--muted); }
+fieldset { border: 0; padding: 0; margin: 0; }
+legend { font-size: 12px; color: var(--muted); margin-bottom: 7px; }
+.choices { display: flex; gap: 8px; flex-wrap: wrap; }
+.choice { display: flex; align-items: center; gap: 7px; padding: 6px 10px; border: 1px solid #4b5564; border-radius: 3px; background: #242c36; font-size: 12px; }
+.choice:has(input:checked) { background: #19375e; border-color: #579dff; color: #e0ebfb; }
+input[type=radio] { accent-color: #579dff; margin: 0; }
+label.field-label { display: block; font-size: 12px; margin: 10px 0 5px; }
+textarea { display: block; width: 100%; resize: vertical; min-height: 60px; border: 1px solid #596574; border-radius: 3px; background: #151b22; padding: 8px 10px; color: #d4dce7; }
+textarea::placeholder { color: #929ead; }
+.review-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.primary { background: #0c66e4; border-color: #0c66e4; color: #fff; }
+.primary:hover { background: #2478ed; }
+.review-status { font-size: 11px; color: var(--muted); }
+.saved-position { display: none; margin-bottom: 12px; padding: 9px 11px; border-left: 3px solid #78ab8c; background: #20362d; font-size: 13px; }
+.saved-position.visible { display: block; }
+.saved-position p { margin-top: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.jira-description { margin-top: 24px; }
+.jira-description>p { margin-left: 21px; font-size: 13px; }
+.issue-link-row { display: flex; flex-wrap: wrap; gap: 10px; margin-left: 21px; font-size: 12px; align-items: center; }
+.footnote { margin: 25px 0 0 21px; font-size: 11px; color: var(--muted); }
+.issue-right>section { margin-bottom: 31px; }
+.rail-fields { padding-left: 21px; }
+.rail-fields>div { grid-template-columns: 95px minmax(0,1fr); gap: 8px; margin-bottom: 13px; }
+.jira-counter { border-radius: 10px; background: #353f4b; padding: 0 7px; font-size: 12px; }
+.rail-content { margin: 0 0 7px 21px; }
+[hidden] { display: none !important; }
+button, summary, textarea { touch-action: manipulation; }
+p, blockquote, h1, h3, .source-title { overflow-wrap: anywhere; }
+@container(max-width: 780px) { .content { grid-template-columns: 1fr; gap: 20px; } .details-columns { grid-template-columns: 1fr; gap: 0; } .issue-tabs { gap: 14px; } }
+@media(min-width: 1750px) { .jira-issue-layout { grid-template-columns: minmax(0,1fr) 320px; gap: 45px; } .field-list>div { grid-template-columns: 150px minmax(0,1fr); } .rail-fields>div { grid-template-columns: 115px minmax(0,1fr); } }
+@media(max-width: 1200px) { .global-menu { gap: 15px; } .global-menu>span:nth-child(n+4) { display: none; } .jira-global { gap: 17px; } .search-context { width: 125px; } .project-sidebar { width: 190px; } main { margin-left: 190px; padding: 25px 22px 35px; } .jira-issue-layout { grid-template-columns: minmax(0,1fr) 225px; gap: 24px; } .rail-fields>div { grid-template-columns: 82px minmax(0,1fr); } }
+@media(max-width: 1000px) { .project-sidebar { width: 54px; padding: 15px 5px; } .project-identity { padding: 0 0 20px; justify-content: center; } .project-identity .project-icon { width: 33px; height: 33px; font-size: 17px; } .project-identity strong,.sidebar-items>div>span:nth-child(2),.sidebar-bottom { display: none; } .sidebar-items>div { padding: 9px 5px; justify-content: center; } main { margin-left: 54px; } .global-menu>span:nth-child(n+3) { display: none; } }
+@media(max-width: 780px) { .jira-issue-layout { grid-template-columns: minmax(0,1fr); } .issue-right { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding-top: 28px; border-top: 1px solid var(--line); margin-top: 25px; } .issue-right>section { margin: 0; } .global-menu,.search-context,.global-help { display: none; } .jira-global { gap: 15px; } .issue-title { font-size: 21px; } .issue-tabs>span:nth-child(n+4) { display: none; } }
+@media(max-width: 520px) { .jira-global { height: 52px; padding: 0 12px; gap: 12px; } .jira-brand { font-size: 22px; } .jira-logo { width: 20px; height: 20px; border-width: 6px; } .app-grid { font-size: 22px; } .create-context { display: none; } .project-sidebar { top: 52px; width: 45px; } main { margin-left: 45px; padding: 19px 13px 28px; } .issue-heading { gap: 9px; align-items: flex-start; } .issue-heading .project-icon { width: 30px; height: 30px; font-size: 15px; margin-top: 4px; } .issue-title { font-size: 19px; } .breadcrumb { font-size: 12px; } .issue-toolbar { margin: 17px 0; gap: 4px; } .issue-toolbar>span:not(.toolbar-spacer) { padding: 5px 7px; font-size: 12px; } .issue-toolbar>.export-context { display: none; } .issue-toolbar .issue-status { margin-left: 0; } .details-columns { padding-left: 15px; } .field-list>div { grid-template-columns: 104px minmax(0,1fr); font-size: 12px; gap: 6px; } .issue-tabs { margin-left: 15px; gap: 14px; } .issue-tabs>span { font-size: 12px; } .issue-tabs>span:nth-child(n+3) { display: none; } .overview-fields { padding-left: 15px; } .overview-fields .field-list>div { grid-template-columns: 104px minmax(0,1fr); } .panel-header { padding: 10px 11px; flex-wrap: wrap; } .panel-header h2 { font-size: 13px; } .summary,.content,.review { padding-left: 12px; padding-right: 12px; } .summary h3 { font-size: 15px; } .risk { padding-left: 9px; } .issue-right { grid-template-columns: 1fr; } .review-actions button { width: 100%; } .rail-fields>div { grid-template-columns: 104px minmax(0,1fr); } }
+@media(pointer: coarse) { button,summary,.choice { min-height: 40px; } textarea { font-size: 16px; } }
+
+</style>
+</head>
+<body>
+<header class="jira-global">
+  <span class="app-grid" aria-hidden="true">▦</span><span class="jira-brand"><span class="jira-logo" aria-hidden="true"></span>Jira Software</span>
+  <nav class="global-menu" aria-label="Jira navigation (visual context)"><span>Dashboards⌄</span><span>Projects⌄</span><span>Issues⌄</span><span>Boards⌄</span><span>Plans⌄</span></nav>
+  <span class="create-context">Create</span><span class="global-spacer"></span><span class="search-context">⌕ &nbsp; Search</span><span class="global-help" aria-hidden="true">?</span><span class="avatar">N</span>
+</header>
+<aside class="project-sidebar" aria-label="Project navigation (visual context)">
+  <div class="project-identity"><span class="project-icon" aria-hidden="true">W</span><strong>Webex Calling</strong></div>
+  <div class="sidebar-items"><div><span aria-hidden="true">▤</span><span>Kanban board</span></div><div><span aria-hidden="true">▱</span><span>Releases</span></div><div><span aria-hidden="true">⌁</span><span>Reports</span></div><div class="sidebar-selected" aria-current="page"><span aria-hidden="true">☑</span><span>Issues</span></div><div><span aria-hidden="true">◇</span><span>Components</span></div><div><span aria-hidden="true">▥</span><span>Velocity Charts</span></div><div><span aria-hidden="true">▤</span><span>WBS Gantt-Chart</span></div><div><span aria-hidden="true">◴</span><span>Capacity Tracker</span></div><div><span aria-hidden="true">◔</span><span>Retrospectives</span></div></div>
+  <div class="sidebar-bottom">Software project <span aria-hidden="true">«</span></div>
+</aside>
+<main>
+  <div class="issue-heading"><span class="project-icon" aria-hidden="true">W</span><div><div class="breadcrumb">Webex Calling <span>/</span> DEMO-142 <span class="demo-label">Demo · simulated data</span></div><h1 class="issue-title">Bulk holiday-hours updates for call queues</h1></div></div>
+  <div class="issue-toolbar" aria-label="Issue actions (visual context)"><span>✎ &nbsp; Edit</span><span>▱ &nbsp; Add comment</span><span>Assign</span><span>More⌄</span><span class="issue-status">Preparing for GA⌄</span><span class="toolbar-spacer"></span><span class="export-context">Export⌄</span></div>
+  <div class="jira-issue-layout"><div class="issue-main">
+  <section class="jira-details" aria-labelledby="details-title"><h2 class="jira-section-title" id="details-title"><span aria-hidden="true">⌄</span> Details</h2><div class="details-columns"><dl class="field-list"><div><dt>Type:</dt><dd><span class="feature-icon" aria-hidden="true">▣</span> Portfolio Feature</dd></div><div><dt>Priority:</dt><dd><span class="priority-icon" aria-hidden="true">⌃</span> P2</dd></div><div><dt>Affects Version/s:</dt><dd>None</dd></div><div><dt>Component/s:</dt><dd class="jira-link">Calling: Administration</dd></div><div><dt>Labels:</dt><dd><span class="jira-label">holiday-hours</span> <span class="jira-label">beta</span></dd></div></dl><dl class="field-list"><div><dt>Resolution:</dt><dd>Unresolved</dd></div><div><dt>Fix Version/s:</dt><dd class="jira-link">Calling · November GA</dd></div></dl></div></section>
+  <div class="issue-tabs" aria-label="Issue sections (visual context)"><span class="active">Overview</span><span>Planning</span><span>DoR &amp; Enablement Plan</span><span>Partner/Customer</span><span>GTM &amp; Communications</span></div>
+  <div class="overview-fields"><dl class="field-list"><div><dt>Team/PT:</dt><dd>Calling — Administration</dd></div><div><dt>PM Leads:</dt><dd><span class="avatar small-avatar" aria-hidden="true">N</span> Niamh</dd></div><div><dt>GA Readiness:</dt><dd><span class="badge warn">Review required</span> <span class="muted small">Juno assessment below</span></dd></div></dl></div>
+  <section class="panel" aria-labelledby="panel-title">
+    <header class="panel-header"><div class="panel-label"><span class="section-chevron" aria-hidden="true">⌄</span><h2 id="panel-title">Juno GA Readiness</h2><span class="badge">Juno</span></div><span class="small muted">GA in 5 days</span></header>
+    <div class="summary">
+      <h3>Resolve the partial-update risk before supporting GA</h3>
+      <p class="muted">A successful-looking update can leave some queues unchanged. The fix still needs verification, and beta usage does not establish readiness at the expected scale.</p>
+      <details class="inventory"><summary id="inventory-label">Assessment sources</summary><div class="inventory-box"><p class="small">Full simulated context used for this assessment. These records are not live.</p><div id="inventory-sources"></div></div></details>
+    </div>
+    <div class="content">
+      <section aria-labelledby="risk-heading">
+        <h3 class="section-label" id="risk-heading">01 / Material risk</h3>
+        <article class="risk">
+          <span class="badge warn">Customer-impact risk</span> <span class="small muted">Source bug priority: Medium</span>
+          <h3>Some queues can silently keep their old holiday hours</h3>
+          <div class="fact-label">Observed in evidence</div>
+          <p>Some queues are skipped while the update reports success. Two failed tests cover partial-update handling.</p>
+          <div class="interpretation"><div class="fact-label">Juno’s interpretation</div><p>An administrator could believe every queue is ready for the holiday, while skipped queues continue routing calls on the old schedule. The customer impact deserves review beyond the bug’s priority label.</p></div>
+          <details class="evidence"><summary>View evidence · bug, tests &amp; feature scope</summary><div data-sources="DEMO-201,TEST-071,DEMO-142"></div></details>
+          <details class="feedback"><summary>Flag this finding as inaccurate</summary><form class="feedback-form" data-finding="risk"><label for="feedback-risk">What should Juno correct? <span class="muted">(optional)</span></label><textarea id="feedback-risk" placeholder="Describe missing context or an incorrect interpretation…"></textarea><button type="submit">Record feedback</button><p class="feedback-status" aria-live="polite"></p></form></details>
+        </article>
+      </section>
+      <section aria-labelledby="gaps-heading">
+        <h3 class="section-label" id="gaps-heading">02 / Evidence gaps &amp; next steps</h3>
+        <article class="gap">
+          <h3>Fix verification is not confirmed</h3>
+          <p>Engineering expects a fix two days before GA. QA has not confirmed a retest date. A planned fix is not a verified fix.</p>
+          <div class="next-step"><strong>Suggested next step:</strong> Confirm the retest date with QA and review the results before the readiness decision.</div><div class="suggestion">Proposed follow-up · QA lead, Aoife · not assigned</div>
+          <details class="evidence"><summary>View evidence · engineering &amp; QA</summary><div data-sources="ENG-041,QA-018"></div></details>
+          <details class="feedback"><summary>Flag this finding as inaccurate</summary><form class="feedback-form" data-finding="verification"><label for="feedback-verification">What should Juno correct? <span class="muted">(optional)</span></label><textarea id="feedback-verification" placeholder="Add a correction…"></textarea><button type="submit">Record feedback</button><p class="feedback-status" aria-live="polite"></p></form></details>
+        </article>
+        <article class="gap">
+          <h3>Expected-scale validation is missing</h3>
+          <p>Beta customers tested at most 20 queues. The feature is intended for updates of up to 200. This is a validation gap, not evidence that large updates fail.</p>
+          <div class="next-step"><strong>Suggested next step:</strong> Obtain validation at 200 queues, including clear reporting of partial failures.</div><div class="suggestion">Proposed follow-up · engineering &amp; QA · not assigned</div>
+          <details class="evidence"><summary>View evidence · beta, scope &amp; QA</summary><div data-sources="BETA-011,BETA-012,DEMO-142,QA-018"></div></details>
+          <details class="feedback"><summary>Flag this finding as inaccurate</summary><form class="feedback-form" data-finding="scale"><label for="feedback-scale">What should Juno correct? <span class="muted">(optional)</span></label><textarea id="feedback-scale" placeholder="Add a correction…"></textarea><button type="submit">Record feedback</button><p class="feedback-status" aria-live="polite"></p></form></details>
+        </article>
+      </section>
+    </div>
+    <section class="review" aria-labelledby="review-heading">
+      <div class="review-heading"><h3 id="review-heading">03 / PM review</h3><p>Your provisional position — final release approval stays with the team.</p></div>
+      <div class="saved-position" id="saved-position" aria-live="polite"></div>
+      <form id="review-form">
+        <fieldset><legend>Based on the available evidence, where do you stand?</legend><div class="choices"><label class="choice"><input type="radio" name="position" value="Ready" required>Ready</label><label class="choice"><input type="radio" name="position" value="Hold">Hold</label><label class="choice"><input type="radio" name="position" value="Need more evidence">Need more evidence</label></div></fieldset>
+        <label class="field-label" for="rationale">Rationale <span class="muted">(optional)</span></label><textarea id="rationale" placeholder="What needs to be resolved, verified or accepted before GA?"></textarea>
+        <div class="review-actions"><button class="primary" id="record-position" type="submit" disabled>Record provisional position</button><span class="review-status" id="review-status" aria-live="polite">Not recorded · kept in this page only</span></div>
+      </form>
+    </section>
+  </section>
+  <section class="jira-description"><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> Description</h2><p>Enable administrators to apply a holiday schedule to up to 200 call queues in a single operation.</p></section>
+  <section class="jira-description"><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> Issue Links</h2><div class="issue-link-row"><span class="muted">is affected by</span><span class="jira-link">▣ DEMO-201</span><span>Bulk update skips queues but reports success</span><span class="badge">OPEN</span></div></section>
+  <p class="footnote">Demo — fictional feature and simulated evidence. No Jira updates or assignments. Entries reset on reload.</p>
+  </div><aside class="issue-right" aria-label="Issue information"><section><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> People</h2><dl class="field-list rail-fields"><div><dt>Assignee:</dt><dd><span class="avatar" aria-hidden="true">N</span> Niamh</dd></div><div><dt>Reporter:</dt><dd><span class="avatar" aria-hidden="true">N</span> Niamh</dd></div><div><dt>Engineering:</dt><dd><span class="avatar" aria-hidden="true">C</span> Cian</dd></div><div><dt>QA lead:</dt><dd><span class="avatar" aria-hidden="true">A</span> Aoife</dd></div><div><dt>Votes:</dt><dd><span class="jira-counter">0</span> <span class="jira-link">Vote for this issue</span></dd></div><div><dt>Watchers:</dt><dd><span class="jira-counter">3</span> <span class="jira-link">Start watching</span></dd></div></dl></section><section><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> Dates</h2><dl class="field-list rail-fields"><div><dt>Planned GA:</dt><dd>In 5 days</dd></div><div><dt>External Beta:</dt><dd>In progress</dd></div><div><dt>Fix expected:</dt><dd>2 days before GA</dd></div><div><dt>QA retest:</dt><dd>Not confirmed</dd></div></dl></section><section><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> Development</h2><p class="jira-link rail-content">Fix in progress</p><p class="muted small rail-content">DEMO-201 · engineering update</p></section><section><h2 class="jira-section-title"><span aria-hidden="true">⌄</span> Prototype</h2><p class="small muted rail-content">Fictional issue · fixed demo snapshot</p><p class="small muted rail-content">Navigation and standard Jira actions are visual context. Juno evidence and PM review are interactive.</p></section></aside></div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const bugs = [
+    {id:'DEMO-201',title:'Bulk update skips queues but reports success',priority:'Medium',status:'Open',owner:'Engineering · Cian',detail:'When part of a bulk write fails, some selected queues retain their previous schedule. The administrator still sees “Update successful”.'},
+    {id:'DEMO-202',title:'Preview list loses page position',priority:'Low',status:'Open',owner:'Engineering · Cian',detail:'Workaround: return to the previous preview page before applying. Selected queues are retained.'},
+    {id:'DEMO-203',title:'Schedule picker retains an old search',priority:'Low',status:'Open',owner:'Engineering · Cian',detail:'Workaround: clear the search before selecting another saved schedule.'},
+    ...['Misaligned queue-count label','Truncated tooltip text','Extra spacing in preview','Inconsistent date-label weight','Help icon alignment','Success icon spacing','Preview table border','Long label wraps early','Modal title padding'].map((title,i)=>({id:'DEMO-'+(204+i),title,priority:'Low · cosmetic',status:'Open',owner:'Engineering · Cian',detail:'Presentation-only defect. No change to selected queues or applied schedule.'}))
+  ];
+  const sources = [
+    {id:'DEMO-142',type:'Feature scope',title:'Bulk holiday-hours updates for call queues',owner:'Niamh · PM',status:'Preparing for GA',text:'Apply one holiday schedule to up to 200 selected call queues. Queues whose schedule is not updated continue using their previous schedule. GA is planned in five days.'},
+    ...bugs.map(b=>({id:b.id,type:'Jira bug',title:b.title,owner:b.owner,status:b.status+' · '+b.priority,text:b.detail})),
+    {id:'TEST-071',type:'Test run',title:'Pre-GA regression · 100 tests',owner:'Aoife · QA lead',status:'97 passed · 3 failed',text:'97 of 100 tests passed. Failed: T-088 (partial failure must identify unchanged queues), T-089 (success must not be reported for skipped queues), and T-090 (queue-count label alignment). T-088 and T-089 link to DEMO-201; T-090 links to DEMO-204.'},
+    {id:'BETA-011',type:'Beta feedback',title:'Northstar Retail · administrator interview',owner:'Niamh · PM',status:'Maximum tested: 20 queues',text:'“Applying the schedule together saved us time. We tried 20 queues and all looked correct.” No larger update was exercised by this customer.'},
+    {id:'BETA-012',type:'Beta feedback',title:'Harbour Services · administrator interview',owner:'Niamh · PM',status:'Maximum tested: 12 queues',text:'“This is much faster than editing each queue.” The customer applied the schedule to 12 queues; no larger update was tested.'},
+    {id:'ENG-041',type:'Engineering update',title:'Partial-update fix plan',owner:'Cian · engineering lead',status:'Fix in progress',text:'Fix for DEMO-201 is expected two days before planned GA. This is an estimate; a completed build and passing verification are not yet available.'},
+    {id:'QA-018',type:'QA update',title:'Verification and scale coverage',owner:'Aoife · QA lead',status:'Retest date unconfirmed',text:'No retest date is confirmed for the DEMO-201 fix. No validation result for a 200-queue update is attached to this release snapshot. Partial-failure verification and scale validation are still required.'}
+  ];
+  const byId = new Map(sources.map(source => [source.id,source]));
+  const state = {position:null,rationale:'',feedback:{}};
+  function element(tag,className,text){const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;}
+  function sourceNode(source){
+    const article=element('article','source');
+    const heading=element('div','source-head');
+    heading.append(element('span','source-id',source.id),element('span','source-title',source.title));
+    article.append(heading,element('div','source-meta',source.type+' · '+source.owner+' · '+source.status),element('blockquote','',source.text));
+    return article;
+  }
+  document.querySelectorAll('[data-sources]').forEach(container=>container.dataset.sources.split(',').forEach(id=>{
+    const source=byId.get(id);if(!source)throw new Error('Missing source '+id);container.append(sourceNode(source));
+  }));
+  document.getElementById('inventory-label').textContent=bugs.length+' open bugs · 97/100 tests passing · 2 beta customers — view all sources';
+  const inventory=document.getElementById('inventory-sources');
+  const bugDetails=element('details','');bugDetails.append(element('summary','',bugs.length+' open bugs · 9 cosmetic, 2 with workarounds, 1 partial-update bug'));
+  const bugList=element('div','');bugs.forEach(bug=>bugList.append(sourceNode(byId.get(bug.id))));bugDetails.append(bugList);inventory.append(bugDetails);
+  sources.filter(source=>!bugs.some(bug=>bug.id===source.id)).forEach(source=>inventory.append(sourceNode(source)));
+  const reviewForm=document.getElementById('review-form');
+  const recordButton=document.getElementById('record-position');
+  const reviewStatus=document.getElementById('review-status');
+  reviewForm.addEventListener('input',()=>{recordButton.disabled=!reviewForm.querySelector('input[name=position]:checked');reviewStatus.textContent='Unrecorded changes · kept in this page only';});
+  reviewForm.addEventListener('submit',event=>{
+    event.preventDefault();if(!reviewForm.reportValidity())return;
+    state.position=reviewForm.querySelector('input[name=position]:checked').value;
+    state.rationale=document.getElementById('rationale').value.trim();
+    const saved=document.getElementById('saved-position');saved.replaceChildren(element('strong','','Provisional position recorded: '+state.position));
+    if(state.rationale)saved.append(element('p','',state.rationale));
+    saved.classList.add('visible');reviewStatus.textContent='Recorded in this demo · resets on reload';
+  });
+  document.querySelectorAll('.feedback-form').forEach(form=>{
+    form.addEventListener('submit',event=>{event.preventDefault();state.feedback[form.dataset.finding]={inaccurate:true,correction:form.querySelector('textarea').value.trim()};form.querySelector('.feedback-status').textContent='Flag recorded in this demo. No Jira changes were made.';});
+    form.querySelector('textarea').addEventListener('input',()=>{form.querySelector('.feedback-status').textContent='Unrecorded feedback';});
+  });
+})();
+</script>
+</body>
+</html>
